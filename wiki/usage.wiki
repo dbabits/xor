@@ -28,6 +28,4 @@ INFO:
       for encryption is the SAME as the one for decryption. For decryption, the
       key is XOR'ed against the encrypted phrase, and the result is the decrypted
       phrase.
-      http://64.233.161.104/search?q=cache:gyGb1oznqlEJ:celtickane.com/programming/crypt/xor.php+encryption+algorithm+runs+through+each+letter+of+the+unencrypted+phrase+and+XOR&hl=en&gl=us&ct=clnk&cd=1
-
-
+      
