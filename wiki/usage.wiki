@@ -1,6 +1,7 @@
 #labels Phase-Requirements,Featured,Phase-Design
 = Introduction =
 c:\>xor
+
 XOR-encrypt stdin. Dmitry Unltd. ⌐2006
 
 USAGE:
