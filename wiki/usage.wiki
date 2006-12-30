@@ -1,19 +1,29 @@
 #labels Phase-Requirements,Featured,Phase-Design
 = Introduction =
+{{{
 c:\>xor
 
-XOR-encrypt stdin. Dmitry Unltd. ⌐2006
+XOR-encrypt[base16-encode|decode] stdin. Dmitry Unltd. ⌐2006
 
 USAGE:
-      xor password
-      -Data to be encrypted/decrypted is read from stdin and written to stdout
+      xor 'password' or [base16encode|base16decode]
+      -if password is one of these: base16encode|base16decode the program encodes/decodes instead of xor
+      -Data to be encrypted/decrypted/encoded/decoded is read from stdin and written to stdout
       -Diagnostic messages are written to stderr, redirect 2>/dev/null (Unix) or 2>NUL (Windows) if you don't want it
       -Binary files no problem. Key also could be binary, but then can't pass it as an arg
 
 EXAMPLES:
+  encrypt:
       xor password <test.original > test.encrypted
+  decrypt:
       xor password <test.encrypted> test.decrypted
-      diff test.original test.decrypted             #should be no difference
+  check(should be no diff):
+      diff test.original test.decrypted
+  ineractive use-type or paste your text,terminate by 'Enter' and ^Z:
+      xor password > test.encrypted
+  encrypt|base16encode|base16decode|decrypt->get original text:
+      echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd
+      xor foobarfoobar < xor.pch |xor base16encode|xor base16decode|xor foobarfoobar >xor.pch.fullcircle && echo. && sum xor.pch xor.pch.fullcircle
 
 INFO:
       XOR-encryption is very simple and quite strong. Search Google for more on XOR encryption.
@@ -28,4 +38,6 @@ INFO:
       for encryption is the SAME as the one for decryption. For decryption, the
       key is XOR'ed against the encrypted phrase, and the result is the decrypted
       phrase.
+}}}
       
+
