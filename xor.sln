@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xor", "xor.vcproj", "{E1DF0A90-1BD4-4376-9655-2A5285657FB1}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pipe", "..\pipe\pipe.vcproj", "{95CA4A06-DBBE-45C8-A47B-31CEB1A038BF}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{E1DF0A90-1BD4-4376-9655-2A5285657FB1}.Debug.ActiveCfg = Debug|Win32
+		{E1DF0A90-1BD4-4376-9655-2A5285657FB1}.Debug.Build.0 = Debug|Win32
+		{E1DF0A90-1BD4-4376-9655-2A5285657FB1}.Release.ActiveCfg = Release|Win32
+		{E1DF0A90-1BD4-4376-9655-2A5285657FB1}.Release.Build.0 = Release|Win32
+		{95CA4A06-DBBE-45C8-A47B-31CEB1A038BF}.Debug.ActiveCfg = Debug|Win32
+		{95CA4A06-DBBE-45C8-A47B-31CEB1A038BF}.Debug.Build.0 = Debug|Win32
+		{95CA4A06-DBBE-45C8-A47B-31CEB1A038BF}.Release.ActiveCfg = Release|Win32
+		{95CA4A06-DBBE-45C8-A47B-31CEB1A038BF}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
