@@ -1,5 +1,6 @@
-# xore
+# xor
 Automatically exported from code.google.com/p/xore
+This is a Windows program demonstrating xor encryption. Binary file is in Releases
 ```
 c:\>xor
 
