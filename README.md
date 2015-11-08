@@ -3,6 +3,8 @@ Automatically exported from code.google.com/p/xore
 
 ```
 This is a Windows program demonstrating xor encryption. 
+It should be easy to port to other OSs, as there's not much if anything Windows-specific.
+(I however did not try to cross-compile it)
 Binary file is in Releases
 c:\>xor
 
