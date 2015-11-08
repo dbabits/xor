@@ -1,7 +1,9 @@
 # xor
 Automatically exported from code.google.com/p/xore
-This is a Windows program demonstrating xor encryption. Binary file is in Releases
+
 ```
+This is a Windows program demonstrating xor encryption. 
+Binary file is in Releases
 c:\>xor
 
 XOR-encrypt[base16-encode|decode] stdin. Dmitry Unltd. ⌐2006
