@@ -2,7 +2,7 @@
 Automatically exported from code.google.com/p/xore
 
 ```
-This is a Windows program demonstrating xor encryption. 
+This is a Windows program demonstrating xor encryption.
 It should be easy to port to other OSs, as there's not much if anything Windows-specific.
 (I however did not try to cross-compile it)
 Binary file is in Releases
@@ -28,7 +28,7 @@ EXAMPLES:
       xor password > test.encrypted
   encrypt|base16encode|base16decode|decrypt->get original text:
       echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd
-      xor foobarfoobar < xor.pch |xor base16encode|xor base16decode|xor foobarfoobar >xor.pch.fullcircle && echo. && sum xor.pch xor.pch.fullcircle
+      xor foobarfoobar < xor.cpp |xor base16encode|xor base16decode|xor foobarfoobar >xor.cpp.fullcircle && diff -s xor.cpp xor.cpp.fullcircle
 
 INFO:
       XOR-encryption is very simple and quite strong. Search Google for more on XOR encryption.
@@ -43,4 +43,4 @@ INFO:
       for encryption is the SAME as the one for decryption. For decryption, the
       key is XOR'ed against the encrypted phrase, and the result is the decrypted
       phrase.
-```      
+```

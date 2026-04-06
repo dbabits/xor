@@ -23,7 +23,7 @@ EXAMPLES:
       xor password > test.encrypted
   encrypt|base16encode|base16decode|decrypt->get original text:
       echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd
-      xor foobarfoobar < xor.pch |xor base16encode|xor base16decode|xor foobarfoobar >xor.pch.fullcircle && echo. && sum xor.pch xor.pch.fullcircle
+      xor foobarfoobar < xor.cpp |xor base16encode|xor base16decode|xor foobarfoobar >xor.cpp.fullcircle && diff -s xor.cpp xor.cpp.fullcircle
 
 INFO:
       XOR-encryption is very simple and quite strong. Search Google for more on XOR encryption.
@@ -39,4 +39,4 @@ INFO:
       key is XOR'ed against the encrypted phrase, and the result is the decrypted
       phrase.
 }}}
-      
+
