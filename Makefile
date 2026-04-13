@@ -9,6 +9,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
+	strip $@
 
 %.o: %.cpp StdAfx.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
