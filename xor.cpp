@@ -82,10 +82,12 @@ void base16encode(const BYTE buffer_in[],int bufinsize, char buffer_out[], int b
     // bufoutsize must be bufinsize*2+1 to hold hex chars plus null terminator
     assert(bufoutsize==bufinsize*2+1 && "hex-representation of a byte is exactly 2 chars long!");
 
-    for(int i=0,j=0; i < bufinsize; i++)
-        j += snprintf(buffer_out+j,bufoutsize-j,"%2.2x",buffer_in[i]);
-		//%2:minimum number of characters output
-	    //.2x: The precision specifies the minimum number of digits to be printed. If the number of digits in the argument is less than precision, the output value is padded on the left with zeros. The value is not truncated when the number of digits exceeds precision.
+    static const char hex[] = "0123456789abcdef";
+    for(int i=0,j=0; i < bufinsize; i++){
+        buffer_out[j++] = hex[buffer_in[i] >> 4];
+        buffer_out[j++] = hex[buffer_in[i] & 0xf];
+    }
+    buffer_out[bufinsize*2] = '\0';
 }
 
 BYTE* base16decode2(const char base16buf[], int bufinsize, BYTE buffer_out[], int bufoutsize){
