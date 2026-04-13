@@ -1,15 +1,5 @@
 #include "StdAfx.h"
 
-std::string xor_encrypt(const std::string& value,const std::string& key){
-	std::string retval(value);
-
-	for(unsigned int i=0, j=0; i < value.length(); i++,j++) {
-		if(j==key.length()) j=0;
-        retval[i]=value[i]^key[j];
-    }
-    return retval;
-}
-
 void xor_encrypt(BYTE buffer[],int bufsize, const BYTE key[], int keysize){
 
     for(int i=0, j=0; i < bufsize; i++, j++)    {
@@ -68,14 +58,6 @@ void help(int argc, char* argv[]){
     info();
 }
 
-int from_hex(const std::string & from){
-    std::stringstream parse(from);
-    int result;
-    parse >> std::hex >> result; //eventually calls strtol.c, which does the work
-    return result;
-}
-
-
 //this taken from CacheManager.cpp.
 //also see AF_AUTHENT\AF_ISAPI\Utilities.cpp ByteToStr() etc.
 void base16encode(const BYTE buffer_in[],int bufinsize, char buffer_out[], int bufoutsize){
@@ -88,18 +70,6 @@ void base16encode(const BYTE buffer_in[],int bufinsize, char buffer_out[], int b
         buffer_out[j++] = hex[buffer_in[i] & 0xf];
     }
     buffer_out[bufinsize*2] = '\0';
-}
-
-BYTE* base16decode2(const char base16buf[], int bufinsize, BYTE buffer_out[], int bufoutsize){
-    assert(bufoutsize==bufinsize/2 && "hex-representation of a byte is exactly 2 chars long!");
-
-    BYTE* pbOrig=buffer_out;
-	for (int i = 0; i<bufinsize/2; i++){
-        //char s[]={*base16buf++,*base16buf++,0};  //take 2 bytes of the string at a time + \0
-        char s[]={*base16buf++,*base16buf++};  //take 2 bytes of the string at a time
-        sscanf(s, "%2hhx", buffer_out++);         //treat 2 bytes as a hex #, put into pb and advance it
-    }
-    return pbOrig;
 }
 
 
@@ -210,62 +180,3 @@ int main(int argc, char* argv[]){
 
 	return 0;
 }
-
-
-#if 0
-//strtol algorithm:
-        for (;;) {      // exit in middle of loop
-                // convert c to value
-                if ( __ascii_isdigit((int)(unsigned char)c) )
-                        digval = c - '0';
-                else if ( __ascii_isalpha((int)(unsigned char)c) )
-                        digval = __ascii_toupper(c) - 'A' + 10;
-                else
-                        break;
-                if (digval >= (unsigned)ibase)
-                        break;          // exit loop if bad digit found
-
-                // record the fact we have read one digit
-                flags |= FL_READDIGIT;
-
-                // we now need to compute number = number * base + digval,
-                //   but we need to know if overflow occured.  This requires
-                //   a tricky pre-check.
-
-                if (number < maxval || (number == maxval &&
-                (unsigned long)digval <= ULONG_MAX % ibase)) {
-                        // we won't overflow, go ahead and multiply
-                        number = number * ibase + digval;
-                }
-                else {
-                        // we would have overflowed -- set the overflow flag
-                        flags |= FL_OVERFLOW;
-                }
-
-                c = *p++;               // read next digit
-        }
-
-
-//If the data was big-endian you would use the dec_uint32be function.
-uint32_t dec_uint32le(const unsigned char *src){
-	return src[0] | ((unsigned)src[1] << 8) | ((unsigned)src[2] << 16) | ((unsigned)src[3] << 24);
-}
-
-#endif
-
-/*
-BYTE* base16decode2(const char base16buf[], int bufinsize, BYTE buffer_out[], int bufoutsize){
-    assert(bufinsize %2==0);//this will not work in Unix in interactive mode, because windows add LF/CR, Unix CR
-    assert(bufoutsize==bufinsize/2 && "hex-representation of a byte is exactly 2 chars long!");
-
-    BYTE* pbOrig=buffer_out;
-	//ALL WRONG
-	for (int i = 0; i<bufinsize/2; i++){
-        int s[]={*base16buf++,*base16buf++};  //take 2 bytes of the string at a time
-        BYTE b=((s[0]<<4)& 0xF0) |(s[1] & 0x0F);//RIGHT (more strict)
-        BYTE b1=(s[0]<<4) |(s[1] & 0x0F);       //RIGHT
-        BYTE b2=(s[1]<<4)|(s[0] & 16);          //WRONG!! F=1111=15 !!!
-        buffer_out[i]=b;         //treat 2 bytes as a hex #, put into pb and advance it
-    }
-    return pbOrig;
-}*/
