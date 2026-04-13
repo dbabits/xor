@@ -49,7 +49,13 @@ INFO:
 
 Benchmarked on Raspberry Pi 5, 100 MB input, median of 3 runs per commit.
 
+![Baseline vs final throughput, and cumulative progression](bench_combined.png)
+
+<details><summary>Step-by-step progression with binary size</summary>
+
 ![Throughput and binary size across commits](bench_results.png)
+
+</details>
 
 | Commit | XOR MB/s | Encode MB/s | Decode MB/s | Binary (KB) |
 |---|---|---|---|---|
