@@ -44,3 +44,41 @@ INFO:
       key is XOR'ed against the encrypted phrase, and the result is the decrypted
       phrase.
 ```
+
+## Performance optimizations (2026)
+
+Benchmarked on Raspberry Pi 5, 100 MB input, median of 3 runs per commit.
+
+![Throughput and binary size across commits](bench_results.png)
+
+| Commit | XOR MB/s | Encode MB/s | Decode MB/s | Binary (KB) |
+|---|---|---|---|---|
+| baseline | 438 | 14 | 78 | 71.8 |
+| 1. buffer 64KB | 515 | 14 | 79 | 71.8 |
+| 2. encode LUT | 493 | 395 | 78 | 71.9 |
+| 3. decode LUT | 505 | 392 | 897 | 71.9 |
+| 4. dead code removed | 490 | 426 | 948 | 69.7 |
+| 5. -Os | 518 | 388 | 803 | 69.7 |
+| 6. strip | 513 | 392 | 766 | 66.1 |
+
+### What moved the needle
+
+**Encode LUT (+2762%):** The biggest win by far. `snprintf("%2.2x", b)` is catastrophically expensive
+per byte — it parses a format string, handles locale, performs bounds checking, and writes through a
+`FILE*`-like abstraction. Two array lookups and two stores cost essentially nothing. The baseline of
+14 MB/s was pure format-string overhead.
+
+**Decode LUT (+1050%):** `strtol` is similarly over-engineered for the job — it handles signs, prefixes
+(`0x`), overflow detection, and locale. A 256-entry nibble lookup table reduces each pair of hex chars
+to two array reads, a shift, and an OR. No branching, no allocation.
+
+**Buffer 64KB (+18%, XOR only):** Helped XOR noticeably because XOR's inner loop is cheap — syscall
+overhead was a meaningful fraction of total time. Had no measurable effect on encode/decode because those
+were CPU-bound on `snprintf`/`strtol`, not I/O-bound.
+
+**Dead code removal:** No runtime effect (the removed functions were never called). Binary shrank ~2KB
+from dropping `<string>` and `<sstream>`.
+
+**-Os and strip:** Pure size plays. Strip took the binary from 71.8 KB to 66.1 KB by removing the symbol
+table and debug section headers. `-Os` vs `-O2` made no measurable throughput difference — the hot paths
+(LUT indexing, fread/fwrite) are already as simple as the compiler can make them.
