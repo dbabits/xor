@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
     int total_bytes_r=0,total_bytes_w=0;
     while(!feof(stdin)){
 
-        BYTE buffer[4096]={0};
+        BYTE buffer[65536]={0};
         size_t count_r=fread(buffer,sizeof(BYTE),sizeof(buffer),stdin);
 
         if(ferror(stdin)){
