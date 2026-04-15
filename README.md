@@ -2,11 +2,8 @@
 Automatically exported from code.google.com/p/xore
 
 ```
-This is a Windows program demonstrating xor encryption.
-It should be easy to port to other OSs, as there's not much if anything Windows-specific.
-(I however did not try to cross-compile it)
-Binary file is in Releases
-c:\>xor
+Cross-platform CLI demonstrating XOR encryption.
+$ xor
 
 XOR-encrypt[base16-encode|decode] stdin. Dmitry Unltd. ⌐2006
 
@@ -24,7 +21,7 @@ EXAMPLES:
       xor password <test.encrypted> test.decrypted
   check(should be no diff):
       diff test.original test.decrypted
-  interactive use-type or paste your text,terminate by 'Enter' and ^Z:
+  interactive use-type or paste your text,terminate by 'Enter' and ^D (Unix) or ^Z (Windows):
       xor password > test.encrypted
   encrypt|base16encode|base16decode|decrypt->get original text:
       echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd

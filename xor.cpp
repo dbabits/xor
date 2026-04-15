@@ -47,7 +47,7 @@ void help(int argc, char* argv[]){
     \n      xor password <test.encrypted> test.decrypted  \
     \n  check(should be no diff):\
     \n      diff test.original test.decrypted             \
-    \n  ineractive use-type or paste your text,terminate by 'Enter' and ^Z:\
+    \n  interactive use-type or paste your text,terminate by 'Enter' and ^D (Unix) or ^Z (Windows):\
     \n      xor password > test.encrypted                 \
     \n  encrypt|base16encode|base16decode|decrypt->get original text:          \
     \n      echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd \
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]){
 
     fprintf(stderr,"\nold stdin mode=%d,old stdout mode=%d, _O_TEXT=%d, new mode=_O_BINARY",prev_mode_stdin,prev_mode_stdout,_O_TEXT);
     fprintf(stderr,"\nkey=%s,keysize=%d",key,keysize);
-	fprintf(stderr,"\nreading from stdin(terminate by ^Z if using interactively):\n");
+	fprintf(stderr,"\nreading from stdin(terminate by ^D (Unix) or ^Z (Windows) if using interactively):\n");
 
     int total_bytes_r=0,total_bytes_w=0;
     while(!feof(stdin)){

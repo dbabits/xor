@@ -1,0 +1,42 @@
+=== baseline ===
+xor_mbps=438.5 (228ms)
+enc_mbps=13.8 (7224ms)
+dec_mbps=78.0 (2562ms)
+bin_bytes=73568
+---
+=== 1_buffer_64k ===
+xor_mbps=515.4 (194ms)
+enc_mbps=13.8 (7237ms)
+dec_mbps=78.8 (2536ms)
+bin_bytes=73568
+---
+=== 2_encode_lut ===
+xor_mbps=492.6 (203ms)
+enc_mbps=395.2 (253ms)
+dec_mbps=78.2 (2555ms)
+bin_bytes=73592
+---
+=== 3_decode_lut ===
+xor_mbps=505.0 (198ms)
+enc_mbps=392.1 (255ms)
+dec_mbps=896.8 (223ms)
+bin_bytes=73592
+---
+=== 4_dead_code ===
+xor_mbps=490.1 (204ms)
+enc_mbps=425.5 (235ms)
+dec_mbps=947.8 (211ms)
+bin_bytes=71424
+---
+=== 5_Os ===
+xor_mbps=518.1 (193ms)
+enc_mbps=387.5 (258ms)
+dec_mbps=803.2 (249ms)
+bin_bytes=71424
+---
+=== 6_strip ===
+xor_mbps=512.8 (195ms)
+enc_mbps=392.1 (255ms)
+dec_mbps=766.2 (261ms)
+bin_bytes=67680
+---
