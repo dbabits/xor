@@ -1,9 +1,9 @@
 #!/bin/bash
-# bench.sh <label> <results_file>
+# bench.sh <label> <results_file> [binary]
 # Runs 3 trials of each operation, records median MB/s and binary size.
 LABEL="$1"
 OUT="$2"
-BINARY=./xor
+BINARY="${3:-./xor}"
 INPUT=bench_input.bin
 HEX=bench_input.hex
 INPUT_MB=100

@@ -14,7 +14,11 @@ $(TARGET): $(OBJS)
 %.o: %.cpp StdAfx.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+asm:
+	$(MAKE) -C asm
+
 clean:
 	rm -f $(OBJS) $(TARGET)
+	$(MAKE) -C asm clean
 
-.PHONY: all clean
+.PHONY: all asm clean

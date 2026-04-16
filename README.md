@@ -85,3 +85,27 @@ from dropping `<string>` and `<sstream>`.
 **-Os and strip:** Pure size plays. Strip took the binary from 71.8 KB to 66.1 KB by removing the symbol
 table and debug section headers. `-Os` vs `-O2` made no measurable throughput difference — the hot paths
 (LUT indexing, fread/fwrite) are already as simple as the compiler can make them.
+
+## ARM64 assembly experiment (2026)
+
+As a further experiment, all three core functions were re-implemented in hand-written ARM64 assembly
+(`asm/xor_asm.s`), with a NEON path for XOR that processes 16 bytes at a time when the key length
+divides 16 (e.g. the 8-byte benchmark key "password").
+
+![C vs ARM64 assembly throughput](bench_asm_comparison.png)
+
+| Implementation | XOR MB/s | Encode MB/s | Decode MB/s |
+|---|---|---|---|
+| C (gcc -Os) | 510 | 452 | 775 |
+| ARM64 assembly | 521 | 394 | 719 |
+| delta | +2% | -13% | -7% |
+
+**The compiler wins on encode and decode.** Hand-written scalar assembly trails C by 7–13% on the LUT
+loops because gcc's instruction scheduler and register allocator produce better code than a human writing
+straightforward ARM64. The NEON XOR path processes 16 bytes per cycle but still only ties C (+2%) because
+the workload is memory-bandwidth-bound at this buffer size — the CPU is waiting on the 65 KB buffer
+round-trips through cache, not on compute.
+
+**Takeaway:** for these simple LUT-based loops on a modern out-of-order CPU, the compiler is the better
+assembly writer. Meaningful assembly wins would require exploiting NEON for the encode/decode table
+lookups (the `TBL` instruction can do 16 simultaneous lookups), which was not attempted here.
