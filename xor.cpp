@@ -65,9 +65,9 @@ void base16encode(const BYTE buffer_in[],int bufinsize, char buffer_out[], int b
     assert(bufoutsize==bufinsize*2+1 && "hex-representation of a byte is exactly 2 chars long!");
 
     static const char hex[] = "0123456789abcdef";
-    for(int i=0,j=0; i < bufinsize; i++){
-        buffer_out[j++] = hex[buffer_in[i] >> 4];
-        buffer_out[j++] = hex[buffer_in[i] & 0xf];
+    for(int i=0; i < bufinsize; i++){
+        buffer_out[i*2]   = hex[buffer_in[i] >> 4];
+        buffer_out[i*2+1] = hex[buffer_in[i] & 0xf];
     }
     buffer_out[bufinsize*2] = '\0';
 }
@@ -97,11 +97,12 @@ BYTE* base16decode(const char base16buf[], int bufinsize, BYTE buffer_out[], int
         0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff  // 0xf0
     };
 
-    BYTE* pbOrig=buffer_out;
     for(int i = 0; i < bufinsize/2; i++){
-        buffer_out[i] = (unhex[(BYTE)base16buf[i*2]] << 4) | unhex[(BYTE)base16buf[i*2+1]];
+        BYTE hi = unhex[(BYTE)base16buf[i*2]];
+        BYTE lo = unhex[(BYTE)base16buf[i*2+1]];
+        buffer_out[i] = (hi << 4) | lo;
     }
-    return pbOrig;
+    return buffer_out;
 }
 
 
@@ -144,15 +145,9 @@ int main(int argc, char* argv[]){
 	fprintf(stderr,"\nreading from stdin(terminate by ^D (Unix) or ^Z (Windows) if using interactively):\n");
 
     int total_bytes_r=0,total_bytes_w=0;
-    while(!feof(stdin)){
-
-        BYTE buffer[65536]={0};
-        size_t count_r=fread(buffer,sizeof(BYTE),sizeof(buffer),stdin);
-
-        if(ferror(stdin)){
-            perror("Read error");
-            return 2;
-        }
+    BYTE buffer[65536];
+    size_t count_r;
+    while((count_r=fread(buffer,sizeof(BYTE),sizeof(buffer),stdin)) > 0){
 
         fprintf(stderr,"\nread %zu bytes\n",count_r);
         total_bytes_r+=count_r;
@@ -163,17 +158,22 @@ int main(int argc, char* argv[]){
             count_w=fwrite(buffer,sizeof(BYTE),count_r,stdout);
         }
         else if(op==do_base16encode){
-            char base16buffer[sizeof(buffer)*2+1]={0};
+            char base16buffer[sizeof(buffer)*2+1];
             base16encode(buffer,count_r,base16buffer,count_r*2+1);
             count_w=fwrite(base16buffer,sizeof(char),count_r*2,stdout);
         }
         else if(op==do_base16decode){
-            BYTE bytebuffer[sizeof(buffer)/2]={0};
+            BYTE bytebuffer[sizeof(buffer)/2];
             base16decode((const char*)buffer,count_r,bytebuffer,count_r/2);
             count_w=fwrite(bytebuffer,sizeof(BYTE),count_r/2,stdout);
         }
         total_bytes_w+=count_w;
         fprintf(stderr,"\nwrote %zu bytes",count_w);
+    }
+
+    if(ferror(stdin)){
+        perror("Read error");
+        return 2;
     }
 
 	fprintf(stderr,"\nread %d bytes total, wrote %d bytes total\n",total_bytes_r,total_bytes_w);
