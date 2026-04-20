@@ -88,24 +88,34 @@ table and debug section headers. `-Os` vs `-O2` made no measurable throughput di
 
 ## ARM64 assembly experiment (2026)
 
-As a further experiment, all three core functions were re-implemented in hand-written ARM64 assembly
-(`asm/xor_asm.s`), with a NEON path for XOR that processes 16 bytes at a time when the key length
-divides 16 (e.g. the 8-byte benchmark key "password").
+All three core functions were re-implemented in hand-written ARM64 assembly (`asm/xor_asm.s`),
+first as scalar then upgraded to full NEON. Build with `make asm` → `./xor_asm`.
 
-![C vs ARM64 assembly throughput](bench_asm_comparison.png)
+![Scalar ASM vs C vs NEON ASM throughput](bench_asm_comparison.png)
 
 | Implementation | XOR MB/s | Encode MB/s | Decode MB/s |
 |---|---|---|---|
-| C (gcc -Os) | 510 | 452 | 775 |
-| ARM64 assembly | 521 | 394 | 719 |
-| delta | +2% | -13% | -7% |
+| Scalar ASM     |  521 |  394 |  719 |
+| C (gcc -Os)    |  521 |  435 |  775 |
+| **NEON ASM**   | **3704** | **1333** | **1429** |
+| NEON vs C      | **+7.1x** | **+3.1x** | **+1.8x** |
 
-**The compiler wins on encode and decode.** Hand-written scalar assembly trails C by 7–13% on the LUT
-loops because gcc's instruction scheduler and register allocator produce better code than a human writing
-straightforward ARM64. The NEON XOR path processes 16 bytes per cycle but still only ties C (+2%) because
-the workload is memory-bandwidth-bound at this buffer size — the CPU is waiting on the 65 KB buffer
-round-trips through cache, not on compute.
+**Scalar ASM loses to the compiler** on encode (-13%) and decode (-7%). gcc's instruction scheduler
+produces better code for these simple LUT loops. Scalar XOR ties at +2%.
 
-**Takeaway:** for these simple LUT-based loops on a modern out-of-order CPU, the compiler is the better
-assembly writer. Meaningful assembly wins would require exploiting NEON for the encode/decode table
-lookups (the `TBL` instruction can do 16 simultaneous lookups), which was not attempted here.
+**NEON is a different story entirely.** Three techniques, one per function:
+
+- **XOR — NEON EOR (7.1x):** Build a 16-byte key tile once, then `EOR v.16b` XORs 16 data bytes in
+  a single instruction. The scalar loop costs ~5 instructions per byte; NEON amortises that to ~5
+  instructions per 16 bytes. The 64 KB working set fits in L1 cache, so the result is essentially
+  L1 bandwidth — ~3.7 GB/s on Cortex-A76.
+
+- **Encode — TBL (3.1x):** `TBL v.16b, {hex_table}, indices` performs 16 simultaneous table lookups
+  in one instruction. The nibble indices are prepared with `USHR`+`AND` and interleaved with `ZIP1`;
+  the entire 8-byte → 16-char conversion then collapses to one `TBL` + one `STR Q`.
+
+- **Decode — arithmetic nibble conversion (1.8x):** Since TBL only covers 16-byte tables and the
+  unhex table is 256 bytes, a branchless arithmetic formula is used instead:
+  `nibble = (char & 0x0f) + (char >> 6) * 9` — works for '0'-'9', 'a'-'f', and 'A'-'F'.
+  `UZP1`/`UZP2` de-interleave hi/lo nibbles; `SHL`+`ORR` combine them into output bytes.
+  All 16 chars convert to 8 bytes in one NEON pass.
