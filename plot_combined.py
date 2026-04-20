@@ -38,18 +38,18 @@ ax1.grid(axis='y', linestyle='--', alpha=0.5)
 
 # --- Right: cumulative progression (the original lines, for reference) ---
 ax2.set_facecolor('#f8f8f8')
-labels_short = ['base', '+buf\n64K', '+enc\nLUT', '+dec\nLUT', '+dead\ncode', '+-Os', '+strip']
-x2 = list(range(7))
-xor_mbps  = [438.5, 515.4, 492.6, 505.0, 490.1, 518.1, 512.8]
-enc_mbps  = [13.8,  13.8,  395.2, 392.1, 425.5, 387.5, 392.1]
-dec_mbps  = [78.0,  78.8,  78.2,  896.8, 947.8, 803.2, 766.2]
+labels_short = ['base', '+buf\n64K', '+enc\nLUT', '+dec\nLUT', '+dead\ncode', '+-Os', '+strip', '+tests']
+x2 = list(range(8))
+xor_mbps  = [438.5, 515.4, 492.6, 505.0, 490.1, 518.1, 512.8, 512.8]
+enc_mbps  = [13.8,  13.8,  395.2, 392.1, 425.5, 387.5, 392.1, 392.1]
+dec_mbps  = [78.0,  78.8,  78.2,  896.8, 947.8, 803.2, 766.2, 766.2]
 
 ax2.plot(x2, xor_mbps, 'o-', color='#2196F3', lw=2, ms=6, label='XOR')
 ax2.plot(x2, enc_mbps, 's-', color='#4CAF50', lw=2, ms=6, label='base16encode')
 ax2.plot(x2, dec_mbps, '^-', color='#FF9800', lw=2, ms=6, label='base16decode')
 
 # shade the "final" column
-ax2.axvspan(5.5, 6.5, color='#A5D6A7', alpha=0.3, label='final config')
+ax2.axvspan(6.5, 7.5, color='#CE93D8', alpha=0.3, label='+test suite')
 
 ax2.set_xticks(x2)
 ax2.set_xticklabels(labels_short, fontsize=9)

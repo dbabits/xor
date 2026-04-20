@@ -62,6 +62,10 @@ int main(int argc, char* argv[]){
 
     if     (strcasecmp(argv[1],"base16encode")==0) op=do_base16encode;
     else if(strcasecmp(argv[1],"base16decode")==0) op=do_base16decode;
+    else if(keysize==0) {
+        fprintf(stderr,"\nError: XOR key cannot be empty\n");
+        return 1;
+    }
 
     int prev_mode_stdin =_setmode(_fileno(stdin), _O_BINARY);
     int prev_mode_stdout=_setmode(_fileno(stdout),_O_BINARY);
@@ -98,6 +102,10 @@ int main(int argc, char* argv[]){
             count_w=fwrite(base16buffer,sizeof(char),count_r*2,stdout);
         }
         else if(op==do_base16decode){
+            if(count_r % 2 != 0) {
+                fprintf(stderr,"\nError: base16decode input length must be even (got %zu bytes)\n",count_r);
+                return 1;
+            }
             BYTE bytebuffer[sizeof(buffer)/2];
             base16decode((const char*)buffer,count_r,bytebuffer,count_r/2);
             count_w=fwrite(bytebuffer,sizeof(BYTE),count_r/2,stdout);
