@@ -4,13 +4,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-labels = ['baseline', '1\nbuffer\n64KB', '2\nencode\nLUT', '3\ndecode\nLUT', '4\ndead\ncode', '5\n-Os', '6\nstrip']
+labels = ['baseline', '1\nbuffer\n64KB', '2\nencode\nLUT', '3\ndecode\nLUT', '4\ndead\ncode', '5\n-Os', '6\nstrip', '7\ntests']
 x = list(range(len(labels)))
 
-xor_mbps  = [438.5, 515.4, 492.6, 505.0, 490.1, 518.1, 512.8]
-enc_mbps  = [13.8,  13.8,  395.2, 392.1, 425.5, 387.5, 392.1]
-dec_mbps  = [78.0,  78.8,  78.2,  896.8, 947.8, 803.2, 766.2]
-bin_bytes = [73568, 73568, 73592, 73592, 71424, 71424, 67680]
+xor_mbps  = [438.5, 515.4, 492.6, 505.0, 490.1, 518.1, 512.8, 512.8]
+enc_mbps  = [13.8,  13.8,  395.2, 392.1, 425.5, 387.5, 392.1, 392.1]
+dec_mbps  = [78.0,  78.8,  78.2,  896.8, 947.8, 803.2, 766.2, 766.2]
+bin_bytes = [73568, 73568, 73592, 73592, 71424, 71424, 67680, 67680]
 
 fig, ax1 = plt.subplots(figsize=(11, 6))
 fig.patch.set_facecolor('#f8f8f8')
@@ -41,7 +41,7 @@ lines1, labs1 = ax1.get_legend_handles_labels()
 lines2, labs2 = ax2.get_legend_handles_labels()
 ax1.legend(lines1 + lines2, labs1 + labs2, loc='center right', fontsize=10)
 
-plt.title('xor utility — throughput and binary size across commits\n(100 MB input, Raspberry Pi 5, median of 3 runs)', fontsize=12)
+plt.title('xor utility — throughput and binary size across commits\n(100 MB input, Raspberry Pi 5, median of 3 runs; step 7 adds test suite, no hot-path change)', fontsize=11)
 plt.tight_layout()
 plt.savefig('bench_results.png', dpi=150, bbox_inches='tight')
 print("Saved bench_results.png")

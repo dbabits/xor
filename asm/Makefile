@@ -15,7 +15,12 @@ $(TARGET): xor_asm.o main.o
 	$(CXX) $(CXXFLAGS) -o $(TARGET) xor_asm.o main.o
 	strip $(TARGET)
 
+# Run integration tests against the NEON ASM binary (ARM64 only).
+test: $(TARGET)
+	@echo "=== Integration tests (xor_asm) ==="
+	@bash ../test.sh $(TARGET)
+
 clean:
 	rm -f *.o $(TARGET)
 
-.PHONY: all clean
+.PHONY: all test clean

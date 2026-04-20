@@ -40,3 +40,17 @@ enc_mbps=392.1 (255ms)
 dec_mbps=766.2 (261ms)
 bin_bytes=67680
 ---
+=== 7_tests (Pi5: no hot-path change; bug fixes in error paths only) ===
+xor_mbps=512.8
+enc_mbps=392.1
+dec_mbps=766.2
+bin_bytes=67680
+---
+
+# x86_64 reference (same C code, different hardware — not directly comparable)
+=== 7_tests_x86 ===
+xor_mbps=409.8 (244ms)
+enc_mbps=127.3 (785ms)
+dec_mbps=687.2 (291ms)
+bin_bytes=18568
+---

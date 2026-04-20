@@ -1,0 +1,6 @@
+=== 7_tests_x86 ===
+xor_mbps=409.8 (244ms)
+enc_mbps=127.3 (785ms)
+dec_mbps=687.2 (291ms)
+bin_bytes=18568
+---
