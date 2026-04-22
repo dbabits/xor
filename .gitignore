@@ -5,3 +5,4 @@ xor_asm
 test_unit
 bench_input.bin
 bench_input.hex
+.claude/settings.json

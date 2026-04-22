@@ -4,10 +4,17 @@
 #include <string.h>
 #include <stdio.h>
 
-// Implemented in xor.cpp (compiled alongside this file under -DTEST_BUILD)
+// When building against asm object (C symbols), we need extern "C" to suppress
+// C++ name mangling so the linker can find the unmangled assembly symbols.
+#ifdef TEST_ASM_BUILD
+extern "C" {
+#endif
 extern void xor_encrypt(BYTE buffer[], int bufsize, const BYTE key[], int keysize);
 extern void base16encode(const BYTE buffer_in[], int bufinsize, char buffer_out[], int bufoutsize);
 extern BYTE* base16decode(const char base16buf[], int bufinsize, BYTE buffer_out[], int bufoutsize);
+#ifdef TEST_ASM_BUILD
+}
+#endif
 
 static int g_run = 0, g_fail = 0;
 

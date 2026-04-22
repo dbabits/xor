@@ -18,7 +18,7 @@ $(TARGET): xor_asm.o main.o
 
 # Unit tests compiled against the NEON ASM implementations (ARM64 only).
 $(TEST_BIN): ../test_unit.cpp xor_asm.o ../StdAfx.h
-	$(CXX) $(CXXFLAGS) -I.. -DTEST_BUILD -o $@ ../test_unit.cpp xor_asm.o
+	$(CXX) $(CXXFLAGS) -I.. -DTEST_BUILD -DTEST_ASM_BUILD -o $@ ../test_unit.cpp xor_asm.o
 
 # Run both unit and integration tests against the NEON ASM binary (ARM64 only).
 test: $(TARGET) $(TEST_BIN)

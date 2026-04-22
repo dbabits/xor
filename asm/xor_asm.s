@@ -115,7 +115,7 @@ xor_encrypt:
     .global base16encode
     .type   base16encode, %function
 base16encode:
-    cbz     w1, .Lbe_ret
+    cbz     w1, .Lbe_null   // bufinsize=0: still null-terminate buf_out[0]
 
     // load hex table and nibble mask into NEON registers once
     adr     x9, .Lhex
