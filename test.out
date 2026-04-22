@@ -1,5 +1,5 @@
 CXX      ?= g++
-CXXFLAGS ?= -Wall -Wextra -Os -std=c++11
+CXXFLAGS ?= -Wall -Wextra -O2 -std=c++11
 TARGET   := xor
 
 SRCS := xor.cpp StdAfx.cpp
@@ -9,19 +9,11 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
-	strip $@
 
 %.o: %.cpp StdAfx.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-test: $(TARGET)
-	@bash test.sh ./$(TARGET)
-
-asm:
-	$(MAKE) -C asm
-
 clean:
 	rm -f $(OBJS) $(TARGET)
-	$(MAKE) -C asm clean
 
-.PHONY: all asm test clean
+.PHONY: all clean
