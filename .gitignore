@@ -2,6 +2,10 @@ asm/*.o
 *.o
 xor
 xor_asm
+test_unit
+asm/test_unit_asm
+test.out
+xor.cpp.fullcircle
 bench_input.bin
 bench_input.hex
 .claude/settings.json
