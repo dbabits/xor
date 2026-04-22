@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(make *)",
+      "Bash(make)",
+      "Bash(bash *)",
+      "Bash(dd *)",
+      "Bash(./xor *)",
+      "Bash(./xor_asm *)",
+      "Bash(python3 *)",
+      "Bash(tail *)",
+      "Bash(strip *)"
+    ]
+  }
+}
