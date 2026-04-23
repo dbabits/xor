@@ -42,11 +42,12 @@ INFO:
       phrase.
 ```
 
-## Performance optimizations (2026)
+## Performance optimizations — C implementation (2026)
 
-Benchmarked on Raspberry Pi 5, 100 MB input, median of 3 runs per commit.
+Step-by-step history of the C binary (`xor.cpp`), benchmarked on Raspberry Pi 5,
+100 MB input, median of 3 runs per commit.
 
-![Baseline vs final throughput, and cumulative progression](bench_combined.png)
+![Baseline vs final throughput, and cumulative progression (C)](bench_combined.png)
 
 <details><summary>Step-by-step progression with binary size</summary>
 
@@ -86,77 +87,51 @@ from dropping `<string>` and `<sstream>`.
 table and debug section headers. `-Os` vs `-O2` made no measurable throughput difference — the hot paths
 (LUT indexing, fread/fwrite) are already as simple as the compiler can make them.
 
-## ARM64 assembly experiment (2026)
+## All implementations compared (2026)
 
-All three core functions were re-implemented in hand-written ARM64 assembly (`asm/xor_asm.s`),
-first as scalar then upgraded to full NEON. Build with `make asm` → `./xor_asm`.
+ARM64 assembly and Rust added alongside the C baseline. All measured fresh on Raspberry Pi 5,
+100 MB input, median of 3 runs. Scalar ASM numbers are from an earlier session (that build was
+superseded by the NEON version).
 
-![Scalar ASM vs C vs NEON ASM throughput](bench_asm_comparison.png)
-
-| Implementation | XOR MB/s | Encode MB/s | Decode MB/s |
-|---|---|---|---|
-| Scalar ASM     |  521 |  394 |  719 |
-| C (gcc -Os)    |  521 |  435 |  775 |
-| **NEON ASM**   | **3704** | **1333** | **1429** |
-| NEON vs C      | **+7.1x** | **+3.1x** | **+1.8x** |
-
-**Scalar ASM loses to the compiler** on encode (-13%) and decode (-7%). gcc's instruction scheduler
-produces better code for these simple LUT loops. Scalar XOR ties at +2%.
-
-**NEON is a different story entirely.** Three techniques, one per function:
-
-- **XOR — NEON EOR (7.1x):** Build a 16-byte key tile once, then `EOR v.16b` XORs 16 data bytes in
-  a single instruction. The scalar loop costs ~5 instructions per byte; NEON amortises that to ~5
-  instructions per 16 bytes. The 64 KB working set fits in L1 cache, so the result is essentially
-  L1 bandwidth — ~3.7 GB/s on Cortex-A76.
-
-- **Encode — TBL (3.1x):** `TBL v.16b, {hex_table}, indices` performs 16 simultaneous table lookups
-  in one instruction. The nibble indices are prepared with `USHR`+`AND` and interleaved with `ZIP1`;
-  the entire 8-byte → 16-char conversion then collapses to one `TBL` + one `STR Q`.
-
-- **Decode — arithmetic nibble conversion (1.8x):** Since TBL only covers 16-byte tables and the
-  unhex table is 256 bytes, a branchless arithmetic formula is used instead:
-  `nibble = (char & 0x0f) + (char >> 6) * 9` — works for '0'-'9', 'a'-'f', and 'A'-'F'.
-  `UZP1`/`UZP2` de-interleave hi/lo nibbles; `SHL`+`ORR` combine them into output bytes.
-  All 16 chars convert to 8 bytes in one NEON pass.
-
-## Rust implementation (2026)
-
-The same three operations re-implemented in Rust (`rust/src/bin/`), producing two binaries:
-`xor_rust_scalar` (safe Rust, no SIMD) and `xor_rust_neon` (ARM64 NEON intrinsics via
-`std::arch::aarch64`). Build with `cd rust && cargo build --release`.
-
-All 27 integration tests pass on both binaries.
-
-![C vs NEON ASM vs Rust scalar vs Rust NEON throughput](bench_rust_comparison.png)
+![All implementations — throughput comparison](bench_asm_comparison.png)
 
 | Implementation  | XOR MB/s | Encode MB/s | Decode MB/s | Binary (KB) |
 |---|---|---|---|---|
-| C (gcc -Os)        |  503 |  452 |   797 |  66 |
-| NEON ASM           | 2778 | 1351 |  2128 |  66 |
-| Rust (scalar)      |  467 |  485 |  1156 | 325 |
-| **Rust (NEON)**    | **4167** | **1282** | **1653** | 325 |
-| Rust NEON vs C     | **+8.3x** | **+2.8x** | **+2.1x** |  |
+| Scalar ASM *(historical)* |  521 |  394 |  719 |  66 |
+| C (gcc -Os)               |  503 |  452 |  797 |  66 |
+| NEON ASM                  | 2778 | 1351 | 2128 |  66 |
+| Rust (scalar)             |  467 |  485 | 1156 | 325 |
+| **Rust (NEON)**           | **4167** | **1282** | **1653** | 325 |
+| Rust NEON vs C            | **+8.3x** | **+2.8x** | **+2.1x** | |
 
-### What's interesting
+### What each technique does
+
+**Scalar ASM loses to the compiler** on encode and decode. gcc's instruction scheduler produces
+better code for simple LUT loops. Manual assembly only pays off when the compiler can't vectorize.
+
+**NEON — three different strategies, one per function:**
+
+- **XOR — key tile + EOR v.16b:** Build a 16-byte repeating key tile once, then XOR 16 data bytes
+  per instruction. Scalar costs ~5 instructions/byte; NEON amortises that to ~5 per 16 bytes.
+  The 64 KB working set fits in L1 cache → essentially L1 bandwidth.
+
+- **Encode — TBL lookup:** `TBL v.16b, {hex_table}, indices` performs 16 simultaneous nibble→hex
+  lookups in one instruction. Nibble indices prepared with `USHR`+`AND`+`ZIP1`; entire 8-byte →
+  16-char conversion in one `TBL` + one `STR Q`.
+
+- **Decode — branchless arithmetic:** The unhex table is 256 bytes — too large for TBL. Instead:
+  `nibble = (char & 0x0f) + (char >> 6) * 9` works for `'0'-'9'`, `'a'-'f'`, `'A'-'F'`.
+  `UZP1`/`UZP2` de-interleave hi/lo nibbles; `SHL`+`ORR` combine into output bytes.
+  16 chars → 8 bytes per NEON pass.
 
 **Rust scalar beats C on encode (+7%) and decode (+45%).** LLVM at `-O3` with LTO auto-vectorizes
-the nibble-loop that gcc's `-Os` leaves scalar. There's no hand-tuned SIMD in `xor_rust_scalar` —
-the compiler generates it from straight-line Rust code.
+the nibble loops that gcc `-Os` leaves scalar — no hand-written SIMD needed.
 
-**Rust scalar XOR is slightly slower than C (-7%).** The XOR loop is too simple to auto-vectorize
-at this key length; the gap is likely `BufWriter` flush overhead vs C's stdio buffering.
+**Rust NEON XOR outpaces hand-written assembly (+50%).** Same `EOR` tile strategy; LLVM unrolls
+the loop more aggressively than the hand-written version, hiding more memory latency.
 
-**Rust NEON XOR outpaces hand-written assembly (+50%, 4167 vs 2778 MB/s).** The Rust code uses
-the same `EOR v.16b` tile strategy as the ASM, but LLVM unrolls the loop more aggressively than
-the hand-written version, hiding more memory latency.
+**Rust NEON encode and decode are within ~5–22% of ASM NEON** — using the same intrinsics
+(`VQTBL1`, `UZP`, `SHL`, `ORR`) but with LLVM register allocation vs hand-scheduled ASM.
 
-**Rust NEON encode is neck-and-neck with ASM (-5%).** Both use `VQTBL1` for 16 simultaneous nibble
-lookups. The small gap is likely ABI or register-save overhead around the `unsafe` intrinsic calls.
-
-**Rust NEON decode slightly trails ASM (-22%).** The same arithmetic formula
-(`nibble = (char & 0x0f) + (char >> 6) * 9`) and `UZP`/`SHL`/`ORR` sequence — the difference is
-within run-to-run variance for this benchmark.
-
-**Binary size: 325 KB vs 66 KB.** Rust's static linking pulls in the standard library runtime.
-The extra ~260 KB is fixed overhead — it doesn't grow with application code.
+**Rust binary size: 325 KB vs 66 KB.** Static linking brings in the standard library runtime.
+The ~260 KB overhead is fixed regardless of application code size.
