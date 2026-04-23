@@ -10,7 +10,7 @@ USAGE:
       xor 'password' or [base16encode|base16decode]
       -if password is one of these: base16encode|base16decode the program encodes/decodes instead of xor
       -Data to be encrypted/decrypted/encoded/decoded is read from stdin and written to stdout
-      -Diagnostic messages are written to stderr, redirect 2>/dev/null (Unix) if you don't want them
+      -Diagnostic messages are written to stderr, redirect 2>/dev/null (Unix) or 2>NUL (Windows) if you don't want it
       -Binary files no problem. Key also could be binary, but then can't pass it as an arg
 
 EXAMPLES:
@@ -20,8 +20,11 @@ EXAMPLES:
       xor password <test.encrypted> test.decrypted
   check(should be no diff):
       diff test.original test.decrypted
+  interactive use-type or paste your text,terminate by 'Enter' and ^D (Unix) or ^Z (Windows):
+      xor password > test.encrypted
   encrypt|base16encode|base16decode|decrypt->get original text:
       echo foo|xor pwd|xor base16encode|xor base16decode|xor pwd
+      xor foobarfoobar < xor.cpp |xor base16encode|xor base16decode|xor foobarfoobar >xor.cpp.fullcircle && diff -s xor.cpp xor.cpp.fullcircle
 
 INFO:
       This tool is intended as a demonstration and a playground for exploring different
