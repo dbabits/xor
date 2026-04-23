@@ -8,4 +8,5 @@ test.out
 xor.cpp.fullcircle
 bench_input.bin
 bench_input.hex
+rust/target/
 .claude/settings.json

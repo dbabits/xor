@@ -20,8 +20,11 @@ test: $(TARGET)
 asm:
 	$(MAKE) -C asm
 
+rust:
+	cd rust && cargo build --release
+
 clean:
 	rm -f $(OBJS) $(TARGET)
 	$(MAKE) -C asm clean
 
-.PHONY: all asm test clean
+.PHONY: all asm rust test clean

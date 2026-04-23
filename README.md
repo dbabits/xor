@@ -119,3 +119,44 @@ produces better code for these simple LUT loops. Scalar XOR ties at +2%.
   `nibble = (char & 0x0f) + (char >> 6) * 9` — works for '0'-'9', 'a'-'f', and 'A'-'F'.
   `UZP1`/`UZP2` de-interleave hi/lo nibbles; `SHL`+`ORR` combine them into output bytes.
   All 16 chars convert to 8 bytes in one NEON pass.
+
+## Rust implementation (2026)
+
+The same three operations re-implemented in Rust (`rust/src/bin/`), producing two binaries:
+`xor_rust_scalar` (safe Rust, no SIMD) and `xor_rust_neon` (ARM64 NEON intrinsics via
+`std::arch::aarch64`). Build with `cd rust && cargo build --release`.
+
+All 27 integration tests pass on both binaries.
+
+![C vs NEON ASM vs Rust scalar vs Rust NEON throughput](bench_rust_comparison.png)
+
+| Implementation  | XOR MB/s | Encode MB/s | Decode MB/s | Binary (KB) |
+|---|---|---|---|---|
+| C (gcc -Os)        |  503 |  452 |   797 |  66 |
+| NEON ASM           | 2778 | 1351 |  2128 |  66 |
+| Rust (scalar)      |  467 |  485 |  1156 | 325 |
+| **Rust (NEON)**    | **4167** | **1282** | **1653** | 325 |
+| Rust NEON vs C     | **+8.3x** | **+2.8x** | **+2.1x** |  |
+
+### What's interesting
+
+**Rust scalar beats C on encode (+7%) and decode (+45%).** LLVM at `-O3` with LTO auto-vectorizes
+the nibble-loop that gcc's `-Os` leaves scalar. There's no hand-tuned SIMD in `xor_rust_scalar` —
+the compiler generates it from straight-line Rust code.
+
+**Rust scalar XOR is slightly slower than C (-7%).** The XOR loop is too simple to auto-vectorize
+at this key length; the gap is likely `BufWriter` flush overhead vs C's stdio buffering.
+
+**Rust NEON XOR outpaces hand-written assembly (+50%, 4167 vs 2778 MB/s).** The Rust code uses
+the same `EOR v.16b` tile strategy as the ASM, but LLVM unrolls the loop more aggressively than
+the hand-written version, hiding more memory latency.
+
+**Rust NEON encode is neck-and-neck with ASM (-5%).** Both use `VQTBL1` for 16 simultaneous nibble
+lookups. The small gap is likely ABI or register-save overhead around the `unsafe` intrinsic calls.
+
+**Rust NEON decode slightly trails ASM (-22%).** The same arithmetic formula
+(`nibble = (char & 0x0f) + (char >> 6) * 9`) and `UZP`/`SHL`/`ORR` sequence — the difference is
+within run-to-run variance for this benchmark.
+
+**Binary size: 325 KB vs 66 KB.** Rust's static linking pulls in the standard library runtime.
+The extra ~260 KB is fixed overhead — it doesn't grow with application code.
