@@ -34,22 +34,20 @@ int main(int argc, char* argv[]){
     \n      xor_asm foobarfoobar < xor.cpp |xor_asm base16encode|xor_asm base16decode|xor_asm foobarfoobar >xor.cpp.fullcircle && diff -s xor.cpp xor.cpp.fullcircle \
     \n  \
     \nINFO: \
-    \n      XOR-encryption is very simple and quite strong. Search Google for more on XOR encryption. \
-    \n      The encryption algorithm runs through each letter of the unencrypted phrase and XOR's it \
-    \n      with one letter of the key. For example, if the unencrypted phrase was  \
-    \n      STARS, and the key was ABC, the encryption algorithm would go something like    \
-    \n      this: (S XOR A)(T XOR B)(A XOR C)(R XOR A)(S XOR B). XOR only works with two    \
-    \n      single letters at a time, which is why the algorithm needs to split both the    \
-    \n      phrase and the key letter by letter. Because of the nature of the algorithm,    \
-    \n      the length of the encrypted phrase is the same length as the unencrypted        \
-    \n      phrase.The beauty of XOR encryption comes in its decryption. The algorithm      \
-    \n      for encryption is the SAME as the one for decryption. For decryption, the       \
-    \n      key is XOR'ed against the encrypted phrase, and the result is the decrypted     \
-    \n      phrase. \
+    \n      This tool is intended as a demonstration and a playground for exploring different \
+    \n      implementation techniques (C, ARM64 assembly, NEON SIMD, Rust) — not as a replacement \
+    \n      for production-grade encryption. For real security needs, use a standard cipher such \
+    \n      as AES-GCM or ChaCha20-Poly1305. \
+    \n \
+    \n      XOR encryption works by combining each byte of the input with a byte from a repeating \
+    \n      key. For example, with plaintext STARS and key ABC: \
+    \n      (S XOR A)(T XOR B)(A XOR C)(R XOR A)(S XOR B). \
+    \n      Because XOR is its own inverse, the same operation decrypts: applying the key again \
+    \n      recovers the original plaintext. \
     \n \
     \n      This build uses ARM64 NEON SIMD instructions (Raspberry Pi 5 / AArch64). \
-    \n      Performance comparisons (NEON vs C vs scalar ASM): \
-    \n      https://github.com/dbabits/xor \
+    \n      More information:  https://en.wikipedia.org/wiki/XOR_cipher \
+    \n      Performance comparisons: https://github.com/dbabits/xor \
     \n "
         );
         return 1;

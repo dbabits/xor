@@ -12,19 +12,18 @@ void xor_encrypt(BYTE buffer[],int bufsize, const BYTE key[], int keysize){
 void info(){
     fprintf(stderr,
 	"\nINFO: \
-	\n      XOR-encryption is very simple and quite strong. Search Google for more on XOR encryption. \
-	\n      The encryption algorithm runs through each letter of the unencrypted phrase and XOR's it \
-	\n      with one letter of the key. For example, if the unencrypted phrase was  \
-	\n      STARS, and the key was ABC, the encryption algorithm would go something like    \
-	\n      this: (S XOR A)(T XOR B)(A XOR C)(R XOR A)(S XOR B). XOR only works with two    \
-	\n      single letters at a time, which is why the algorithm needs to split both the    \
-	\n      phrase and the key letter by letter. Because of the nature of the algorithm,    \
-	\n      the length of the encrypted phrase is the same length as the unencrypted        \
-	\n      phrase.The beauty of XOR encryption comes in its decryption. The algorithm      \
-	\n      for encryption is the SAME as the one for decryption. For decryption, the       \
-	\n      key is XOR'ed against the encrypted phrase, and the result is the decrypted     \
-	\n      phrase.\
-	\n      http://64.233.161.104/search?q=cache:gyGb1oznqlEJ:celtickane.com/programming/crypt/xor.php+encryption+algorithm+runs+through+each+letter+of+the+unencrypted+phrase+and+XOR&hl=en&gl=us&ct=clnk&cd=1 \
+	\n      This tool is intended as a demonstration and a playground for exploring different \
+	\n      implementation techniques (C, ARM64 assembly, NEON SIMD, Rust) — not as a replacement \
+	\n      for production-grade encryption. For real security needs, use a standard cipher such \
+	\n      as AES-GCM or ChaCha20-Poly1305. \
+	\n \
+	\n      XOR encryption works by combining each byte of the input with a byte from a repeating \
+	\n      key. For example, with plaintext STARS and key ABC: \
+	\n      (S XOR A)(T XOR B)(A XOR C)(R XOR A)(S XOR B). \
+	\n      Because XOR is its own inverse, the same operation decrypts: applying the key again \
+	\n      recovers the original plaintext. \
+	\n \
+	\n      More information: https://en.wikipedia.org/wiki/XOR_cipher \
 	\n "
     );
 }
