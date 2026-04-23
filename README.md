@@ -103,6 +103,7 @@ superseded by the NEON version).
 | Rust (scalar)             |  467 |  485 | 1156 | 325 |
 | **Rust (NEON)**           | **4167** | **1282** | **1653** | 325 |
 | Rust NEON vs C            | **+8.3x** | **+2.8x** | **+2.1x** | |
+| Rust NEON vs NEON ASM     | **+50%** | -5% | -22% | |
 
 ### What each technique does
 
