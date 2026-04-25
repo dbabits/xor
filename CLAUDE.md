@@ -42,7 +42,7 @@ Two binaries: `xor_rust_scalar` (pure Rust) and `xor_rust_neon` (conditional `#[
 
 ## Testing
 
-`test.sh` — 25 integration tests covering exit codes, known-vector encode/decode, round-trips (XOR, encode/decode, full pipeline), multi-chunk key cycling across 65536-byte boundaries, odd-input error handling, and case-insensitive keyword matching. Run with `make test` or `bash test.sh [path-to-binary]`.
+`test.sh` — 27 integration tests covering exit codes, known-vector encode/decode, round-trips (XOR, encode/decode, full pipeline), multi-chunk key cycling across 65536-byte boundaries, odd-input error handling, and case-insensitive keyword matching. Run with `make test` or `bash test.sh [path-to-binary]`.
 
 ## Benchmarking
 
