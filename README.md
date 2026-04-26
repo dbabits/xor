@@ -135,3 +135,98 @@ the loop more aggressively than the hand-written version, hiding more memory lat
 
 **Rust binary size: 325 KB vs 66 KB.** Static linking brings in the standard library runtime.
 The ~260 KB overhead is fixed regardless of application code size.
+
+## Portable SIMD via runtime dispatch — `xor_rust_simd`
+
+The `xor_rust_neon` binary is hard-gated on `#[cfg(target_arch = "aarch64")]`: on Apple
+Silicon and Pi 5 it uses NEON, but on Intel/AMD x86_64 it falls all the way back to scalar
+even though the CPU has SSE/AVX. To get one source file that compiles for every target
+*and* picks the best SIMD ISA at runtime, `rust/src/bin/simd.rs` uses the
+[`multiversion`](https://crates.io/crates/multiversion) macro:
+
+```rust
+#[multiversion::multiversion(targets = "simd")]
+fn xor_tiled_16(buf: &mut [u8], tile: &[u8; 16]) {
+    for chunk in buf.chunks_exact_mut(16) {
+        for j in 0..16 { chunk[j] ^= tile[j]; }
+    }
+}
+```
+
+`targets = "simd"` expands to a clone of the function for each common SIMD level —
+`x86_64+sse2`, `+avx`, `+avx2`, `+avx512f`, `aarch64+neon`, `wasm32+simd128`, and a
+generic fallback. An atomic-cached function pointer selects the best one on first call.
+
+The bodies are written so LLVM's autovectoriser handles them without
+intrinsics:
+
+- **XOR** runs over fixed-stride 16-byte chunks XOR'd against a 16-byte key tile (built
+  when `klen` divides 16). LLVM widens the inner unrolled loop to PXOR/VPXOR/VPXOR-zmm/EOR.
+- **Encode** uses the branchless nibble-to-hex formula
+  `n + b'0' + (mask & 39)` with `mask = (9-n) >> 7` (signed) — pure u8 arithmetic, no
+  table lookup, fully vectorisable.
+- **Decode** uses the same branchless `(c & 0x0f) + (c >> 6) * 9` formula as the
+  hand-written NEON version.
+
+### x86_64 throughput (50 MB input, AVX2 box)
+
+Quick local measurement (medians of 3 runs, on the development VM — not the Pi 5):
+
+| Implementation        | XOR MB/s | Encode MB/s | Decode MB/s |
+|---|---|---|---|
+| Rust (scalar)         |  714 |  735 | 1666 |
+| **Rust (SIMD)**       | **5000** | **2083** | **4761** |
+| SIMD vs scalar        | **+7.0×** | **+2.8×** | **+2.9×** |
+
+Same source, no `#[cfg]`, no intrinsics — `multiversion` + LLVM autovectorisation does
+all the work. The same source built for aarch64 picks the NEON clone instead of the
+AVX2 one. Pi 5 numbers should land near the hand-written `xor_rust_neon` row above;
+the encode path is the only one likely to be slower because the portable formula doesn't
+get the single-instruction `TBL` lookup.
+
+### What "portable" means here
+
+`multiversion` does runtime dispatch **within an architecture** — picking AVX2 vs SSE4.1
+vs SSE2 once you're already on x86_64, or NEON vs scalar once you're already on aarch64.
+It does **not** make one ELF/PE/Mach-O run on both Intel and ARM CPUs — those are
+different machine codes.
+
+What you actually get from one source file:
+
+```sh
+cargo build --release --target=x86_64-unknown-linux-gnu     # Linux Intel/AMD
+cargo build --release --target=aarch64-unknown-linux-gnu    # Linux ARM (Pi 5, Graviton)
+cargo build --release --target=x86_64-apple-darwin          # Intel Mac
+cargo build --release --target=aarch64-apple-darwin         # Apple Silicon Mac
+cargo build --release --target=x86_64-pc-windows-msvc       # Windows Intel/AMD
+```
+
+→ N binaries, one per (arch, OS), each of which runtime-dispatches the best SIMD ISA
+the host CPU supports. The only mainstream "one file, multiple CPU archs" deployment
+is **macOS universal binaries**, which you build by combining the two `apple-darwin`
+outputs with `lipo`:
+
+```sh
+lipo -create \
+  target/x86_64-apple-darwin/release/xor_rust_simd \
+  target/aarch64-apple-darwin/release/xor_rust_simd \
+  -output xor_rust_simd_universal
+```
+
+Linux ELF and Windows PE don't have an analogue — you ship two artifacts and let the
+package manager / container manifest / installer pick the right one.
+
+### When this is the right choice
+
+- **One source, many target binaries**, each maximally vectorised for its host CPU,
+  with no per-arch `#[cfg]` blocks to maintain.
+- **Adding AVX-512 or SVE later is just another entry in the targets list** — no new code.
+- **You can tolerate ~10–20% off the hand-written ceiling** in exchange for portability.
+
+### When to drop down to intrinsics instead
+
+- **Encode is hot enough that you need the TBL/PSHUFB single-instruction lookup.**
+  Autovectorised arithmetic gets close but not all the way to the NEON `TBL` performance.
+- **You need a SIMD primitive LLVM can't pattern-match** (gather, masked store on stable,
+  fancy permute). Then write a `WithSimd` impl in `pulp` or fall back to `std::arch::*`
+  inside `#[target_feature]` functions.
