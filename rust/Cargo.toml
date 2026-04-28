@@ -3,6 +3,9 @@ name = "xor_rust"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+multiversion = "0.8"
+
 [[bin]]
 name = "xor_rust_scalar"
 path = "src/bin/scalar.rs"
@@ -10,6 +13,10 @@ path = "src/bin/scalar.rs"
 [[bin]]
 name = "xor_rust_neon"
 path = "src/bin/neon.rs"
+
+[[bin]]
+name = "xor_rust_simd"
+path = "src/bin/simd.rs"
 
 [profile.release]
 opt-level = 3

@@ -36,9 +36,14 @@ Dispatch logic: if `argv[1]` is `"base16encode"` or `"base16decode"` (case-insen
 
 Same three functions implemented in ARMv8-A assembly with NEON SIMD instructions. `main.cpp` is a C wrapper that calls the assembly routines via `extern "C"`. Key techniques: `EOR v.16b` for XOR with key tiling, `TBL` for encode lookups, branchless arithmetic for decode.
 
-### Rust (`rust/src/bin/scalar.rs`, `rust/src/bin/neon.rs`)
+### Rust (`rust/src/bin/scalar.rs`, `rust/src/bin/neon.rs`, `rust/src/bin/simd.rs`)
 
-Two binaries: `xor_rust_scalar` (pure Rust) and `xor_rust_neon` (conditional `#[cfg(target_arch = "aarch64")]` NEON intrinsics with scalar fallback). Built with `opt-level = 3`, LTO, and strip.
+Three binaries:
+- `xor_rust_scalar` — pure Rust, no SIMD.
+- `xor_rust_neon` — hand-written aarch64 NEON intrinsics, gated on `#[cfg(target_arch = "aarch64")]` with a scalar fallback for other targets.
+- `xor_rust_simd` — portable SIMD via the [`multiversion`](https://crates.io/crates/multiversion) macro (`targets = "simd"`). One source compiles for every common SIMD ISA (SSE2/AVX/AVX2/AVX-512 on x86_64, NEON on aarch64, simd128 on wasm32) and selects the best at runtime. Loops are written so LLVM autovectorises them — branchless arithmetic for encode/decode, fixed-stride 16-byte chunks for XOR.
+
+All three are built with `opt-level = 3`, LTO, and strip.
 
 ## Testing
 
