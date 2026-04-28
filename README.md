@@ -180,9 +180,19 @@ Quick local measurement (medians of 3 runs, on the development VM — not the Pi
 
 Same source, no `#[cfg]`, no intrinsics — `multiversion` + LLVM autovectorisation does
 all the work. The same source built for aarch64 picks the NEON clone instead of the
-AVX2 one. Pi 5 numbers should land near the hand-written `xor_rust_neon` row above;
-the encode path is the only one likely to be slower because the portable formula doesn't
-get the single-instruction `TBL` lookup.
+AVX2 one.
+
+**Actual Pi 5 numbers** (Cortex-A76, 100 MB input, median of 3 runs):
+
+| | XOR MB/s | Encode MB/s | Decode MB/s |
+|---|---|---|---|
+| Rust (NEON) — hand-written intrinsics | 2439 | 826 | 1550 |
+| Rust (SIMD/multiversion) | 1429 | 820 | 1754 |
+| multiversion vs NEON | **-41%** | ~0% | **+13%** |
+
+Encode and decode land close to the hand-written NEON build; XOR is 41% slower because
+the autovectoriser does not unroll the tile loop as aggressively as explicit `veorq_u8`
+intrinsics. If XOR throughput is the priority, `xor_rust_neon` remains the ceiling.
 
 ### What "portable" means here
 
